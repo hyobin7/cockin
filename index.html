@@ -7,229 +7,193 @@
   <title>실시간 배드민턴 코트 배정</title>
   <style>
     body {
+      font-family: 'Arial', sans-serif;
       margin: 0;
-      font-family: sans-serif;
-      background: #e6f3ff;
+      padding: 1em;
+      background: #f0f8ff;
       height: 100vh;
-      display: flex;
-      flex-direction: column;
+      overflow: hidden;
     }
     h2 {
       text-align: center;
-      padding: 10px;
-      background: #d2ebff;
-      margin: 0;
-      font-size: 1.5em;
-    }
-    .input-container {
-      padding: 10px;
-      text-align: center;
-      background: #d2ebff;
-    }
-    textarea {
-      width: 90%;
-      height: 50px;
-      font-size: 16px;
       margin-bottom: 10px;
     }
-    button {
-      padding: 10px 20px;
+    textarea {
+      width: 100%;
+      height: 80px;
       font-size: 16px;
-      background: #007bff;
+      margin-bottom: 8px;
+    }
+    .btn {
+      width: 100%;
+      padding: 10px;
+      background-color: #007bff;
       color: white;
+      font-size: 16px;
       border: none;
       border-radius: 6px;
+      margin-bottom: 10px;
     }
-    .main {
+    .layout {
       display: flex;
-      flex: 1;
-      padding: 10px;
+      height: calc(100% - 240px);
       gap: 10px;
     }
-    .court-column, .waiting-column {
-      flex: 1;
-      background: #f5faff;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      padding: 10px;
+    .courts {
+      flex: 0 0 50%;
       display: flex;
       flex-direction: column;
       gap: 10px;
     }
-    .court {
-      flex: 1;
-      background: white;
-      border: 1px solid #ddd;
+    .column {
+      background: #fff;
+      border: 2px solid #ccc;
       border-radius: 8px;
       padding: 10px;
+      flex: 1;
+      overflow-y: auto;
     }
-    .court h3 {
+    .column h3 {
       margin-top: 0;
+      font-size: 18px;
+      text-align: center;
+    }
+    .header {
       display: flex;
       justify-content: space-between;
+      align-items: center;
+    }
+    .reset-btn {
+      background-color: #ff6666;
+      color: white;
+      border: none;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 12px;
+      cursor: pointer;
     }
     .name-tag {
-      padding: 6px 10px;
-      margin: 5px 0;
-      border-radius: 5px;
+      padding: 8px;
+      margin: 4px 0;
+      border-radius: 4px;
       font-weight: bold;
-      font-size: 1.1em;
-      background: #eee;
+      font-size: 16px;
+      text-transform: uppercase;
+      user-select: none;
     }
     .male {
       background-color: #cce5ff;
+      border: 1px solid #3399ff;
     }
     .female {
-      background-color: #ffd6f0;
+      background-color: #ffd6e8;
+      border: 1px solid #ff66b2;
     }
-    .reset-btn {
-      font-size: 12px;
-      background: #ff6666;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      padding: 2px 6px;
+    #namePool {
+      flex: 1;
+      background: #fff;
+      border: 2px solid #ccc;
+      border-radius: 8px;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
     }
   </style>
 </head>
 <body>
 
-  <h2>실시간 배드민턴 코트 배정</h2>
+<h2>실시간 배드민턴 코트 배정</h2>
 
-  <div class="input-container">
-    <textarea id="inputArea" placeholder="예시: kim hyunsoo 남 3급\nlee jiyeon 여 2급"></textarea><br/>
-    <button onclick="generateTags()">이름표 만들기</button>
+<textarea id="inputArea" placeholder="예시: 남 김현수 3급
+여 이지연 2급"></textarea>
+<button class="btn" id="generateBtn" onclick="generateTags()">이름표 만들기</button>
+
+<div class="layout">
+  <div class="courts">
+    <div class="column" id="court1"><h3>1코트 <button class="reset-btn" onclick="resetCourt('court1')">리셋</button></h3></div>
+    <div class="column" id="court2"><h3>2코트 <button class="reset-btn" onclick="resetCourt('court2')">리셋</button></h3></div>
+    <div class="column" id="court3"><h3>3코트 <button class="reset-btn" onclick="resetCourt('court3')">리셋</button></h3></div>
   </div>
-
-  <div class="main">
-    <div class="court-column">
-      <div class="court" id="court1">
-        <h3>1코트 <button class="reset-btn" onclick="resetCourt('court1')">리셋</button></h3>
-      </div>
-      <div class="court" id="court2">
-        <h3>2코트 <button class="reset-btn" onclick="resetCourt('court2')">리셋</button></h3>
-      </div>
-      <div class="court" id="court3">
-        <h3>3코트 <button class="reset-btn" onclick="resetCourt('court3')">리셋</button></h3>
-      </div>
-    </div>
-    <div class="waiting-column" id="namePool">
-      <h3>대기</h3>
-    </div>
+  <div class="column" id="namePool">
+    <h3>대기</h3>
   </div>
+</div>
 
-  
-    <script type="module">
-      import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-      import { getDatabase, ref, push, set, onValue, remove } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+  import { getDatabase, ref, onValue, set, push, remove } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
 
-      const firebaseConfig = {
-        apiKey: "AIzaSyBQnSbBwJR-IS1aOuNrJz4qopK3RSiZbGY",
-        authDomain: "cock-5c32d.firebaseapp.com",
-        databaseURL: "https://cock-5c32d-default-rtdb.firebaseio.com",
-        projectId: "cock-5c32d",
-        storageBucket: "cock-5c32d.firebasestorage.app",
-        messagingSenderId: "639370966543",
-        appId: "1:639370966543:web:84bdc6f474a7ba8cbc557a",
-        measurementId: "G-FLZSZVBPHC"
-      };
+  const firebaseConfig = {
+    apiKey: "AIzaSyBQnSbBwJR-IS1aOuNrJz4qopK3RSiZbGY",
+    authDomain: "cock-5c32d.firebaseapp.com",
+    databaseURL: "https://cock-5c32d-default-rtdb.firebaseio.com",
+    projectId: "cock-5c32d",
+    storageBucket: "cock-5c32d.firebasestorage.app",
+    messagingSenderId: "639370966543",
+    appId: "1:639370966543:web:84bdc6f474a7ba8cbc557a",
+    measurementId: "G-FLZSZVBPHC"
+  };
 
-      const app = initializeApp(firebaseConfig);
-      const db = getDatabase(app);
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
 
-      const namePoolRef = ref(db, "namePool");
+  const containerMap = {
+    namePool: ref(db, 'namePool'),
+    court1: ref(db, 'court1'),
+    court2: ref(db, 'court2'),
+    court3: ref(db, 'court3')
+  };
 
-      function syncNamePool() {
-        onValue(namePoolRef, snapshot => {
-          const pool = document.getElementById("namePool");
-          pool.innerHTML = "<h3>대기</h3>";
-          snapshot.forEach(child => {
-            const data = child.val();
-            const tag = document.createElement("div");
-            tag.className = "name-tag";
-            tag.textContent = `${data.name} / ${data.level}`;
-            if (data.gender === "남") tag.classList.add("male");
-            if (data.gender === "여") tag.classList.add("female");
-            tag.id = child.key;
-            tag.onclick = () => remove(ref(db, "namePool/" + child.key));
-            pool.appendChild(tag);
-          });
-        });
-      }
-
-      window.generateTags = function() {
-        const input = document.getElementById("inputArea").value.trim();
-        const lines = input.split("\n");
-
-        lines.forEach(line => {
-          const parts = line.trim().split(" ");
-          if (parts.length >= 3) {
-            const name = parts[0] + " " + parts[1];
-            const gender = parts[2];
-            const level = parts.slice(3).join(" ");
-            push(namePoolRef, { name, gender, level });
-          }
-        });
-
-        document.getElementById("inputArea").value = "";
-      }
-
-      window.resetCourt = function(courtId) {
-        const court = document.getElementById(courtId);
-        const pool = document.getElementById("namePool");
-        Array.from(court.children).forEach(child => {
-          if (!child.tagName.startsWith("H")) {
-            pool.appendChild(child);
-          }
-        });
-      }
-
-      window.addEventListener("DOMContentLoaded", () => {
-        syncNamePool();
-      });
-    </script>
-    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
-    
-  <script>
-    function generateTags() {
-      const input = document.getElementById("inputArea").value.trim();
-      const lines = input.split("\n");
-      const pool = document.getElementById("namePool");
-
-      lines.forEach(line => {
-        const parts = line.trim().split(" ");
-        if (parts.length >= 3) {
-          const name = parts[0] + " " + parts[1];
-          const gender = parts[2];
-          const level = parts.slice(3).join(" ");
-          const tag = document.createElement("div");
-          tag.className = "name-tag";
-          tag.textContent = `${name} / ${level}`;
-          if (gender === "남") tag.classList.add("male");
-          if (gender === "여") tag.classList.add("female");
-          pool.appendChild(tag);
-        }
-      });
-
-      document.getElementById("inputArea").value = "";
-    }
-
-    function resetCourt(courtId) {
-      const court = document.getElementById(courtId);
-      const pool = document.getElementById("namePool");
-      Array.from(court.children).forEach(child => {
-        if (!child.tagName.startsWith("H")) {
-          pool.appendChild(child);
-        }
-      });
-    }
-
-    ["namePool", "court1", "court2", "court3"].forEach(id => {
-      new Sortable(document.getElementById(id), {
-        group: "shared",
-        animation: 150
+  function syncContainer(containerId, ref) {
+    onValue(ref, (snapshot) => {
+      const container = document.getElementById(containerId);
+      container.querySelectorAll(".name-tag").forEach(tag => tag.remove());
+      snapshot.forEach(child => {
+        const val = child.val();
+        const div = document.createElement("div");
+        div.className = "name-tag " + val.gender;
+        div.innerText = val.name.toUpperCase() + (val.level ? " / " + val.level : "");
+        div.onclick = () => remove(child.ref);
+        container.appendChild(div);
       });
     });
-  </script>
+  }
+
+  Object.entries(containerMap).forEach(([id, ref]) => syncContainer(id, ref));
+
+  window.generateTags = function () {
+    const input = document.getElementById("inputArea").value.trim();
+    const lines = input.split("\n");
+    lines.forEach(line => {
+      const parts = line.trim().split(" ");
+      if (parts.length >= 3) {
+        const gender = parts[0] === "여" ? "female" : "male";
+        const name = parts[1] + " " + parts[2];
+        const level = parts.slice(3).join(" ");
+        push(containerMap.namePool, { name, level, gender });
+      }
+    });
+    document.getElementById("inputArea").value = "";
+  }
+
+  document.getElementById("inputArea").addEventListener("keydown", function(e) {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      generateTags();
+    }
+  });
+
+  window.resetCourt = function (courtId) {
+    const courtRef = containerMap[courtId];
+    onValue(courtRef, snapshot => {
+      snapshot.forEach(child => {
+        push(containerMap.namePool, child.val());
+        remove(child.ref);
+      });
+    }, { onlyOnce: true });
+  }
+</script>
+
 </body>
 </html>
