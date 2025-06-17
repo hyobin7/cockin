@@ -1,12 +1,163 @@
 
-<!-- SIMPLIFIED SAMPLE HTML CONTENT FOR MODIFICATION -->
-<script>
-  function createNameTag(name, level, gender) {
-    const nameTag = document.createElement("div");
-    nameTag.classList.add("name-tag");
-    if (gender === "남") nameTag.classList.add("male");
-    if (gender === "여") nameTag.classList.add("female");
-    nameTag.textContent = `${name} / ${level}`;
-    return nameTag;
-  }
-</script>
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>배드민턴 코트 배정</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: sans-serif;
+      display: flex;
+      flex-direction: row;
+      height: 100vh;
+      overflow: hidden;
+    }
+    .court-container {
+      width: 50%;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-around;
+      padding: 10px;
+      box-sizing: border-box;
+      background: #f8f8f8;
+    }
+    .court {
+      flex: 1;
+      margin: 5px 0;
+      background: #fff;
+      border: 2px solid #ccc;
+      border-radius: 10px;
+      padding: 10px;
+    }
+    .court h2 {
+      margin: 0 0 10px 0;
+      position: sticky;
+      top: 0;
+      background: white;
+    }
+    .waiting-area {
+      width: 50%;
+      background: #e6f7ff;
+      padding: 10px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      box-sizing: border-box;
+    }
+    .waiting-area h2 {
+      margin-top: 0;
+    }
+    .name-tag {
+      padding: 6px 10px;
+      border-radius: 5px;
+      background: #eee;
+      margin: 5px 0;
+      display: inline-block;
+      font-weight: bold;
+      font-size: 1.2em;
+      cursor: move;
+    }
+    .male {
+      background-color: #cce5ff;
+    }
+    .female {
+      background-color: #f8d0e7;
+    }
+    .input-group {
+      display: flex;
+      margin-bottom: 10px;
+    }
+    .input-group input {
+      flex: 1;
+      margin-right: 5px;
+    }
+    button {
+      padding: 6px 10px;
+      font-size: 1em;
+    }
+  </style>
+</head>
+<body>
+  <div class="court-container">
+    <div class="court" ondrop="drop(event)" ondragover="allowDrop(event)">
+      <h2>1코트 <button onclick="resetCourt(this)">리셋</button></h2>
+    </div>
+    <div class="court" ondrop="drop(event)" ondragover="allowDrop(event)">
+      <h2>2코트 <button onclick="resetCourt(this)">리셋</button></h2>
+    </div>
+    <div class="court" ondrop="drop(event)" ondragover="allowDrop(event)">
+      <h2>3코트 <button onclick="resetCourt(this)">리셋</button></h2>
+    </div>
+  </div>
+  <div class="waiting-area">
+    <h2>대기</h2>
+    <div class="input-group">
+      <input type="text" id="name" placeholder="이름" />
+      <input type="text" id="gender" placeholder="성별 (남/여)" />
+      <input type="text" id="level" placeholder="급수" />
+      <button onclick="createNameTag()">이름표 만들기</button>
+    </div>
+    <div id="waiting" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+  </div>
+
+  <script>
+    function allowDrop(ev) {
+      ev.preventDefault();
+    }
+
+    function drag(ev) {
+      ev.dataTransfer.setData("text", ev.target.id);
+    }
+
+    function drop(ev) {
+      ev.preventDefault();
+      const data = ev.dataTransfer.getData("text");
+      const element = document.getElementById(data);
+      if (ev.target.classList.contains("court") || ev.target.id === "waiting") {
+        ev.target.appendChild(element);
+      }
+    }
+
+    function createNameTag() {
+      const name = document.getElementById("name").value.trim();
+      const gender = document.getElementById("gender").value.trim();
+      const level = document.getElementById("level").value.trim();
+      if (!name || !gender || !level) return;
+
+      const nameTag = document.createElement("div");
+      nameTag.classList.add("name-tag");
+      nameTag.textContent = `${name} / ${level}`;
+      nameTag.setAttribute("draggable", "true");
+      nameTag.id = "tag-" + Date.now();
+      nameTag.ondragstart = drag;
+
+      if (gender === "남") nameTag.classList.add("male");
+      else if (gender === "여") nameTag.classList.add("female");
+
+      nameTag.oncontextmenu = (e) => {
+        e.preventDefault();
+        e.target.remove();
+      };
+
+      document.getElementById("waiting").appendChild(nameTag);
+      document.getElementById("name").value = "";
+      document.getElementById("gender").value = "";
+      document.getElementById("level").value = "";
+    }
+
+    function resetCourt(button) {
+      const court = button.closest(".court");
+      const tags = court.querySelectorAll(".name-tag");
+      tags.forEach(tag => document.getElementById("waiting").appendChild(tag));
+    }
+
+    document.addEventListener("keydown", function(e) {
+      if (e.key === "Enter") {
+        createNameTag();
+      }
+    });
+  </script>
+</body>
+</html>
