@@ -4,187 +4,183 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>실시간 배드민턴 코트 배정</title>
+  <title>배드민턴 코트 배정</title>
+  <script type="module">
+    // Firebase SDK 불러오기
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+    import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
+
+    // Firebase 구성
+    const firebaseConfig = {
+      apiKey: "AIzaSyBQnSbBwJR-IS1aOuNrJz4qopK3RSiZbGY",
+      authDomain: "cock-5c32d.firebaseapp.com",
+      databaseURL: "https://cock-5c32d-default-rtdb.firebaseio.com",
+      projectId: "cock-5c32d",
+      storageBucket: "cock-5c32d.firebasestorage.app",
+      messagingSenderId: "639370966543",
+      appId: "1:639370966543:web:84bdc6f474a7ba8cbc557a",
+      measurementId: "G-FLZSZVBPHC"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    let userId = "user-" + Math.floor(Math.random() * 1000000);
+
+    function writeData() {
+      const name = document.getElementById("name").value.trim();
+      const gender = document.getElementById("gender").value.trim();
+      const level = document.getElementById("level").value.trim();
+      if (!name || !gender || !level) return;
+
+      const newTag = {
+        name,
+        gender,
+        level,
+        timestamp: Date.now()
+      };
+      set(ref(db, 'waiting/' + userId + '-' + newTag.timestamp), newTag);
+
+      document.getElementById("name").value = "";
+      document.getElementById("gender").value = "";
+      document.getElementById("level").value = "";
+    }
+
+    function createTagElement(id, data) {
+      const el = document.createElement("div");
+      el.className = "name-tag";
+      el.id = id;
+      el.textContent = `${data.name} / ${data.level}`;
+      if (data.gender === "남") el.classList.add("male");
+      else if (data.gender === "여") el.classList.add("female");
+      el.setAttribute("draggable", "true");
+      el.ondragstart = (e) => e.dataTransfer.setData("text", e.target.id);
+      el.oncontextmenu = (e) => {
+        e.preventDefault();
+        e.target.remove();
+        set(ref(db, 'waiting/' + e.target.id), null);
+      };
+      return el;
+    }
+
+    function loadWaitingList() {
+      const waitingRef = ref(db, 'waiting');
+      onValue(waitingRef, (snapshot) => {
+        const data = snapshot.val();
+        const container = document.getElementById("waiting");
+        container.innerHTML = "";
+        if (data) {
+          Object.entries(data).forEach(([id, item]) => {
+            const tag = createTagElement(id, item);
+            container.appendChild(tag);
+          });
+        }
+      });
+    }
+
+    window.addEventListener("DOMContentLoaded", () => {
+      document.getElementById("createBtn").addEventListener("click", writeData);
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") writeData();
+      });
+      loadWaitingList();
+    });
+  </script>
   <style>
     body {
-      font-family: 'Arial', sans-serif;
       margin: 0;
-      padding: 1em;
-      background: #f0f8ff;
+      font-family: sans-serif;
+      display: flex;
       height: 100vh;
       overflow: hidden;
     }
-    h2 {
-      text-align: center;
-      margin-bottom: 10px;
-    }
-    textarea {
-      width: 100%;
-      height: 80px;
-      font-size: 16px;
-      margin-bottom: 8px;
-    }
-    .btn {
-      width: 100%;
-      padding: 10px;
-      background-color: #007bff;
-      color: white;
-      font-size: 16px;
-      border: none;
-      border-radius: 6px;
-      margin-bottom: 10px;
-    }
-    .layout {
-      display: flex;
-      height: calc(100% - 240px);
-      gap: 10px;
-    }
-    .courts {
-      flex: 0 0 50%;
+    .court-container {
+      width: 50%;
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      justify-content: space-around;
+      padding: 10px;
+      background: #f8f8f8;
+      box-sizing: border-box;
     }
-    .column {
+    .court {
+      flex: 1;
+      margin: 5px 0;
       background: #fff;
       border: 2px solid #ccc;
-      border-radius: 8px;
+      border-radius: 10px;
       padding: 10px;
-      flex: 1;
-      overflow-y: auto;
     }
-    .column h3 {
-      margin-top: 0;
-      font-size: 18px;
-      text-align: center;
+    .court h2 {
+      margin: 0 0 10px 0;
     }
-    .header {
+    .waiting-area {
+      width: 50%;
+      background: #e6f7ff;
+      padding: 10px;
+      box-sizing: border-box;
       display: flex;
-      justify-content: space-between;
-      align-items: center;
+      flex-direction: column;
     }
-    .reset-btn {
-      background-color: #ff6666;
-      color: white;
-      border: none;
-      padding: 4px 8px;
-      border-radius: 6px;
-      font-size: 12px;
-      cursor: pointer;
+    .input-group {
+      display: flex;
+      gap: 5px;
+      margin-bottom: 10px;
+    }
+    .input-group input {
+      flex: 1;
     }
     .name-tag {
-      padding: 8px;
+      padding: 6px 10px;
+      border-radius: 5px;
+      background: #eee;
       margin: 4px 0;
-      border-radius: 4px;
       font-weight: bold;
-      font-size: 16px;
-      text-transform: uppercase;
-      user-select: none;
+      font-size: 1.2em;
+      cursor: move;
     }
     .male {
       background-color: #cce5ff;
-      border: 1px solid #3399ff;
     }
     .female {
-      background-color: #ffd6e8;
-      border: 1px solid #ff66b2;
-    }
-    #namePool {
-      flex: 1;
-      background: #fff;
-      border: 2px solid #ccc;
-      border-radius: 8px;
-      padding: 10px;
-      display: flex;
-      flex-direction: column;
-      overflow-y: auto;
+      background-color: #f8d0e7;
     }
   </style>
 </head>
 <body>
-
-<h2>실시간 배드민턴 코트 배정</h2>
-
-<textarea id="inputArea" placeholder="예시: kim hyunsoo 3급 남\nlee jiyeon 2급 여"></textarea>
-<button class="btn" id="generateBtn" onclick="generateTags()">이름표 만들기</button>
-
-<div class="layout">
-  <div class="courts">
-    <div class="column" id="court1"><h3>1코트 <button class="reset-btn" onclick="resetCourt('court1')">리셋</button></h3></div>
-    <div class="column" id="court2"><h3>2코트 <button class="reset-btn" onclick="resetCourt('court2')">리셋</button></h3></div>
-    <div class="column" id="court3"><h3>3코트 <button class="reset-btn" onclick="resetCourt('court3')">리셋</button></h3></div>
+  <div class="court-container">
+    <div class="court" ondrop="drop(event)" ondragover="allowDrop(event)">
+      <h2>1코트</h2>
+    </div>
+    <div class="court" ondrop="drop(event)" ondragover="allowDrop(event)">
+      <h2>2코트</h2>
+    </div>
+    <div class="court" ondrop="drop(event)" ondragover="allowDrop(event)">
+      <h2>3코트</h2>
+    </div>
   </div>
-  <div class="column" id="namePool">
-    <h3>대기</h3>
+  <div class="waiting-area">
+    <div class="input-group">
+      <input id="name" type="text" placeholder="이름" />
+      <input id="gender" type="text" placeholder="성별 (남/여)" />
+      <input id="level" type="text" placeholder="급수" />
+      <button id="createBtn">이름표 만들기</button>
+    </div>
+    <div id="waiting" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
   </div>
-</div>
 
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
-  import { getDatabase, ref, onValue, set, push, remove } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
-
-  const firebaseConfig = {
-    apiKey: "AIzaSyBQnSbBwJR-IS1aOuNrJz4qopK3RSiZbGY",
-    authDomain: "cock-5c32d.firebaseapp.com",
-    databaseURL: "https://cock-5c32d-default-rtdb.firebaseio.com",
-    projectId: "cock-5c32d",
-    storageBucket: "cock-5c32d.firebasestorage.app",
-    messagingSenderId: "639370966543",
-    appId: "1:639370966543:web:84bdc6f474a7ba8cbc557a",
-    measurementId: "G-FLZSZVBPHC"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const db = getDatabase(app);
-
-  const containerMap = {
-    namePool: ref(db, 'namePool'),
-    court1: ref(db, 'court1'),
-    court2: ref(db, 'court2'),
-    court3: ref(db, 'court3')
-  };
-
-  function syncContainer(containerId, ref) {
-    onValue(ref, (snapshot) => {
-      const container = document.getElementById(containerId);
-      container.querySelectorAll(".name-tag").forEach(tag => tag.remove());
-      snapshot.forEach(child => {
-        const val = child.val();
-        const div = document.createElement("div");
-        div.className = "name-tag " + val.gender;
-        div.innerText = val.name.toUpperCase();
-        div.onclick = () => remove(child.ref);
-        container.appendChild(div);
-      });
-    });
-  }
-
-  Object.entries(containerMap).forEach(([id, ref]) => syncContainer(id, ref));
-
-  window.generateTags = function () {
-    const input = document.getElementById("inputArea").value.trim();
-    const lines = input.split("\n");
-    lines.forEach(line => {
-      const parts = line.trim().split(" ");
-      if (parts.length >= 3) {
-        const name = parts[0] + " " + parts[1];
-        const gender = parts[2] === "여" ? "female" : "male";
-        push(containerMap.namePool, { name, gender });
+  <script>
+    function allowDrop(ev) {
+      ev.preventDefault();
+    }
+    function drop(ev) {
+      ev.preventDefault();
+      const data = ev.dataTransfer.getData("text");
+      const element = document.getElementById(data);
+      if (ev.target.classList.contains("court") || ev.target.id === "waiting") {
+        ev.target.appendChild(element);
       }
-    });
-    document.getElementById("inputArea").value = "";
-  }
-
-  window.resetCourt = function (courtId) {
-    const courtRef = containerMap[courtId];
-    onValue(courtRef, snapshot => {
-      snapshot.forEach(child => {
-        push(containerMap.namePool, child.val());
-        remove(child.ref);
-      });
-    }, { onlyOnce: true });
-  }
-</script>
-
+    }
+  </script>
 </body>
 </html>
