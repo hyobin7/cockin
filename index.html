@@ -118,7 +118,78 @@
     </div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+  
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+      import { getDatabase, ref, push, set, onValue, remove } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
+
+      const firebaseConfig = {
+        apiKey: "AIzaSyBQnSbBwJR-IS1aOuNrJz4qopK3RSiZbGY",
+        authDomain: "cock-5c32d.firebaseapp.com",
+        databaseURL: "https://cock-5c32d-default-rtdb.firebaseio.com",
+        projectId: "cock-5c32d",
+        storageBucket: "cock-5c32d.firebasestorage.app",
+        messagingSenderId: "639370966543",
+        appId: "1:639370966543:web:84bdc6f474a7ba8cbc557a",
+        measurementId: "G-FLZSZVBPHC"
+      };
+
+      const app = initializeApp(firebaseConfig);
+      const db = getDatabase(app);
+
+      const namePoolRef = ref(db, "namePool");
+
+      function syncNamePool() {
+        onValue(namePoolRef, snapshot => {
+          const pool = document.getElementById("namePool");
+          pool.innerHTML = "<h3>대기</h3>";
+          snapshot.forEach(child => {
+            const data = child.val();
+            const tag = document.createElement("div");
+            tag.className = "name-tag";
+            tag.textContent = `${data.name} / ${data.level}`;
+            if (data.gender === "남") tag.classList.add("male");
+            if (data.gender === "여") tag.classList.add("female");
+            tag.id = child.key;
+            tag.onclick = () => remove(ref(db, "namePool/" + child.key));
+            pool.appendChild(tag);
+          });
+        });
+      }
+
+      window.generateTags = function() {
+        const input = document.getElementById("inputArea").value.trim();
+        const lines = input.split("\n");
+
+        lines.forEach(line => {
+          const parts = line.trim().split(" ");
+          if (parts.length >= 3) {
+            const name = parts[0] + " " + parts[1];
+            const gender = parts[2];
+            const level = parts.slice(3).join(" ");
+            push(namePoolRef, { name, gender, level });
+          }
+        });
+
+        document.getElementById("inputArea").value = "";
+      }
+
+      window.resetCourt = function(courtId) {
+        const court = document.getElementById(courtId);
+        const pool = document.getElementById("namePool");
+        Array.from(court.children).forEach(child => {
+          if (!child.tagName.startsWith("H")) {
+            pool.appendChild(child);
+          }
+        });
+      }
+
+      window.addEventListener("DOMContentLoaded", () => {
+        syncNamePool();
+      });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    
   <script>
     function generateTags() {
       const input = document.getElementById("inputArea").value.trim();
