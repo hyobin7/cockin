@@ -4,183 +4,161 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>배드민턴 코트 배정</title>
-  <script type="module">
-    // Firebase SDK 불러오기
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-    import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
-
-    // Firebase 구성
-    const firebaseConfig = {
-      apiKey: "AIzaSyBQnSbBwJR-IS1aOuNrJz4qopK3RSiZbGY",
-      authDomain: "cock-5c32d.firebaseapp.com",
-      databaseURL: "https://cock-5c32d-default-rtdb.firebaseio.com",
-      projectId: "cock-5c32d",
-      storageBucket: "cock-5c32d.firebasestorage.app",
-      messagingSenderId: "639370966543",
-      appId: "1:639370966543:web:84bdc6f474a7ba8cbc557a",
-      measurementId: "G-FLZSZVBPHC"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-
-    let userId = "user-" + Math.floor(Math.random() * 1000000);
-
-    function writeData() {
-      const name = document.getElementById("name").value.trim();
-      const gender = document.getElementById("gender").value.trim();
-      const level = document.getElementById("level").value.trim();
-      if (!name || !gender || !level) return;
-
-      const newTag = {
-        name,
-        gender,
-        level,
-        timestamp: Date.now()
-      };
-      set(ref(db, 'waiting/' + userId + '-' + newTag.timestamp), newTag);
-
-      document.getElementById("name").value = "";
-      document.getElementById("gender").value = "";
-      document.getElementById("level").value = "";
-    }
-
-    function createTagElement(id, data) {
-      const el = document.createElement("div");
-      el.className = "name-tag";
-      el.id = id;
-      el.textContent = `${data.name} / ${data.level}`;
-      if (data.gender === "남") el.classList.add("male");
-      else if (data.gender === "여") el.classList.add("female");
-      el.setAttribute("draggable", "true");
-      el.ondragstart = (e) => e.dataTransfer.setData("text", e.target.id);
-      el.oncontextmenu = (e) => {
-        e.preventDefault();
-        e.target.remove();
-        set(ref(db, 'waiting/' + e.target.id), null);
-      };
-      return el;
-    }
-
-    function loadWaitingList() {
-      const waitingRef = ref(db, 'waiting');
-      onValue(waitingRef, (snapshot) => {
-        const data = snapshot.val();
-        const container = document.getElementById("waiting");
-        container.innerHTML = "";
-        if (data) {
-          Object.entries(data).forEach(([id, item]) => {
-            const tag = createTagElement(id, item);
-            container.appendChild(tag);
-          });
-        }
-      });
-    }
-
-    window.addEventListener("DOMContentLoaded", () => {
-      document.getElementById("createBtn").addEventListener("click", writeData);
-      document.addEventListener("keydown", (e) => {
-        if (e.key === "Enter") writeData();
-      });
-      loadWaitingList();
-    });
-  </script>
+  <title>실시간 배드민턴 코트 배정</title>
   <style>
     body {
       margin: 0;
       font-family: sans-serif;
-      display: flex;
+      background: #e6f3ff;
       height: 100vh;
-      overflow: hidden;
-    }
-    .court-container {
-      width: 50%;
       display: flex;
       flex-direction: column;
-      justify-content: space-around;
+    }
+    h2 {
+      text-align: center;
       padding: 10px;
-      background: #f8f8f8;
-      box-sizing: border-box;
+      background: #d2ebff;
+      margin: 0;
+      font-size: 1.5em;
+    }
+    .input-container {
+      padding: 10px;
+      text-align: center;
+      background: #d2ebff;
+    }
+    textarea {
+      width: 90%;
+      height: 50px;
+      font-size: 16px;
+      margin-bottom: 10px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 6px;
+    }
+    .main {
+      display: flex;
+      flex: 1;
+      padding: 10px;
+      gap: 10px;
+    }
+    .court-column, .waiting-column {
+      flex: 1;
+      background: #f5faff;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
     }
     .court {
       flex: 1;
-      margin: 5px 0;
-      background: #fff;
-      border: 2px solid #ccc;
-      border-radius: 10px;
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 8px;
       padding: 10px;
     }
-    .court h2 {
-      margin: 0 0 10px 0;
-    }
-    .waiting-area {
-      width: 50%;
-      background: #e6f7ff;
-      padding: 10px;
-      box-sizing: border-box;
+    .court h3 {
+      margin-top: 0;
       display: flex;
-      flex-direction: column;
-    }
-    .input-group {
-      display: flex;
-      gap: 5px;
-      margin-bottom: 10px;
-    }
-    .input-group input {
-      flex: 1;
+      justify-content: space-between;
     }
     .name-tag {
       padding: 6px 10px;
+      margin: 5px 0;
       border-radius: 5px;
-      background: #eee;
-      margin: 4px 0;
       font-weight: bold;
-      font-size: 1.2em;
-      cursor: move;
+      font-size: 1.1em;
+      background: #eee;
     }
     .male {
       background-color: #cce5ff;
     }
     .female {
-      background-color: #f8d0e7;
+      background-color: #ffd6f0;
+    }
+    .reset-btn {
+      font-size: 12px;
+      background: #ff6666;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      padding: 2px 6px;
     }
   </style>
 </head>
 <body>
-  <div class="court-container">
-    <div class="court" ondrop="drop(event)" ondragover="allowDrop(event)">
-      <h2>1코트</h2>
-    </div>
-    <div class="court" ondrop="drop(event)" ondragover="allowDrop(event)">
-      <h2>2코트</h2>
-    </div>
-    <div class="court" ondrop="drop(event)" ondragover="allowDrop(event)">
-      <h2>3코트</h2>
-    </div>
-  </div>
-  <div class="waiting-area">
-    <div class="input-group">
-      <input id="name" type="text" placeholder="이름" />
-      <input id="gender" type="text" placeholder="성별 (남/여)" />
-      <input id="level" type="text" placeholder="급수" />
-      <button id="createBtn">이름표 만들기</button>
-    </div>
-    <div id="waiting" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+
+  <h2>실시간 배드민턴 코트 배정</h2>
+
+  <div class="input-container">
+    <textarea id="inputArea" placeholder="예시: kim hyunsoo 남 3급\nlee jiyeon 여 2급"></textarea><br/>
+    <button onclick="generateTags()">이름표 만들기</button>
   </div>
 
+  <div class="main">
+    <div class="court-column">
+      <div class="court" id="court1">
+        <h3>1코트 <button class="reset-btn" onclick="resetCourt('court1')">리셋</button></h3>
+      </div>
+      <div class="court" id="court2">
+        <h3>2코트 <button class="reset-btn" onclick="resetCourt('court2')">리셋</button></h3>
+      </div>
+      <div class="court" id="court3">
+        <h3>3코트 <button class="reset-btn" onclick="resetCourt('court3')">리셋</button></h3>
+      </div>
+    </div>
+    <div class="waiting-column" id="namePool">
+      <h3>대기</h3>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <script>
-    function allowDrop(ev) {
-      ev.preventDefault();
+    function generateTags() {
+      const input = document.getElementById("inputArea").value.trim();
+      const lines = input.split("\n");
+      const pool = document.getElementById("namePool");
+
+      lines.forEach(line => {
+        const parts = line.trim().split(" ");
+        if (parts.length >= 3) {
+          const name = parts[0] + " " + parts[1];
+          const gender = parts[2];
+          const level = parts.slice(3).join(" ");
+          const tag = document.createElement("div");
+          tag.className = "name-tag";
+          tag.textContent = `${name} / ${level}`;
+          if (gender === "남") tag.classList.add("male");
+          if (gender === "여") tag.classList.add("female");
+          pool.appendChild(tag);
+        }
+      });
+
+      document.getElementById("inputArea").value = "";
     }
-    function drop(ev) {
-      ev.preventDefault();
-      const data = ev.dataTransfer.getData("text");
-      const element = document.getElementById(data);
-      if (ev.target.classList.contains("court") || ev.target.id === "waiting") {
-        ev.target.appendChild(element);
-      }
+
+    function resetCourt(courtId) {
+      const court = document.getElementById(courtId);
+      const pool = document.getElementById("namePool");
+      Array.from(court.children).forEach(child => {
+        if (!child.tagName.startsWith("H")) {
+          pool.appendChild(child);
+        }
+      });
     }
+
+    ["namePool", "court1", "court2", "court3"].forEach(id => {
+      new Sortable(document.getElementById(id), {
+        group: "shared",
+        animation: 150
+      });
+    });
   </script>
 </body>
 </html>
