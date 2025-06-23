@@ -50,7 +50,7 @@
       border: 2px solid #ccc;
       border-radius: 8px;
       padding: 10px;
-      min-height: 100px;
+      min-height: 130px;
       flex-grow: 1;
     }
     .column h3 {
@@ -72,7 +72,7 @@
       cursor: pointer;
     }
     .name-tag {
-  width: calc(50% - 10px);
+  width: calc(66% - 10px);
   display: inline-block;
   vertical-align: top;
   box-sizing: border-box;
@@ -98,7 +98,7 @@
       border-color: #ff66b2;
     }
     #namePool {
-      flex: 0 0 50%;
+      flex: 0 0 40%;
       background: #fff;
       border: 2px solid #ccc;
       border-radius: 8px;
@@ -351,7 +351,7 @@ document.getElementById("thCount").onclick = () => {
       <div style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center;">
         <h3 style="margin: 0;">대기 1</h3>
         <button class="reset-btn" onclick="resetToWait('wait1')">리셋</button>
-      </div>
+      <div class="nameTagContainer" id="tag-wait1"></div></div>
       <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px;">
         <button class="reset-btn" onclick="moveAllToCourt('wait1', 'court1')">1코트</button>
         <button class="reset-btn" onclick="moveAllToCourt('wait1', 'court2')">2코트</button>
@@ -366,7 +366,7 @@ document.getElementById("thCount").onclick = () => {
         <h3 style="margin: 0;">대기 2</h3>
         <button class="reset-btn" onclick="resetToWait('wait2')">리셋</button>
         <button class="reset-btn" onclick="moveAllToCourt('wait2', 'wait1')">대기1</button>
-      </div>
+      <div class="nameTagContainer" id="tag-wait2"></div></div>
       <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px;">
         <button class="reset-btn" onclick="moveAllToCourt('wait2', 'court1')">1코트</button>
         <button class="reset-btn" onclick="moveAllToCourt('wait2', 'court2')">2코트</button>
@@ -379,14 +379,14 @@ document.getElementById("thCount").onclick = () => {
 
 <div class="layout">
   <div class="courts">
-    <div class="column" id="court1"><div class="header"><h3>1코트</h3><button class="reset-btn" onclick="resetCourt('court1')">리셋</button></div></div>
-    <div class="column" id="court2"><div class="header"><h3>2코트</h3><button class="reset-btn" onclick="resetCourt('court2')">리셋</button></div></div>
-    <div class="column" id="court3"><div class="header"><h3>3코트</h3><button class="reset-btn" onclick="resetCourt('court3')">리셋</button></div></div>
-    <div class="column" id="court4"><div class="header"><h3>4코트</h3><button class="reset-btn" onclick="resetCourt('court4')">리셋</button></div></div>
+    <div class="column" id="court1"><div class="header"><h3>1코트</h3><button class="reset-btn" onclick="resetCourt('court1')">리셋</button><div class="nameTagContainer" id="tag-court1"></div></div></div>
+    <div class="column" id="court2"><div class="header"><h3>2코트</h3><button class="reset-btn" onclick="resetCourt('court2')">리셋</button><div class="nameTagContainer" id="tag-court2"></div></div></div>
+    <div class="column" id="court3"><div class="header"><h3>3코트</h3><button class="reset-btn" onclick="resetCourt('court3')">리셋</button><div class="nameTagContainer" id="tag-court3"></div></div></div>
+    <div class="column" id="court4"><div class="header"><h3>4코트</h3><button class="reset-btn" onclick="resetCourt('court4')">리셋</button><div class="nameTagContainer" id="tag-court4"></div></div></div>
   </div>
   
-  <div class="column" id="namePool"><div class="header"><h3>대기</h3></div></div>
-  <div class="column" id="statsTableContainer" style="min-width: 200px; background: #fff;">
+  <div class="column" id="namePool"><div class="header"><h3>대기</h3><div class="nameTagContainer" id="tag-namePool"></div></div></div>
+  <div class="column" id="statsTableContainer" style="min-width: 300px; flex: 1;" style="min-width: 200px; background: #fff;">
     <table border="1" style="width: 100%; border-collapse: collapse; font-size: 14px;">
       <thead>
         <tr>
@@ -482,16 +482,31 @@ function moveAllToCourt(fromId, toId) {
   });
 }
 
-["namePool", "wait1", "wait2", "court1", "court2", "court3", "court4"].forEach(id => {
+['tag-court1', 'tag-court2', 'tag-court3', 'tag-court4', 'tag-wait1', 'tag-wait2', 'tag-namePool'].forEach(id => {
   new Sortable(document.getElementById(id), {
     group: "shared",
     animation: 150,
-    onAdd: function(evt) {
-      if (evt.to.querySelectorAll('.name-tag').length > 4) {
-        evt.from.appendChild(evt.item);
-        alert("각 칸에는 최대 4명까지만 배정할 수 있습니다.");
-        return;
-      }
+    
+onAdd: function(evt) {
+  const toId = evt.to.id;
+  const tagEl = evt.item;
+
+  // ✅ namePool은 무제한 → 예외 처리
+  if (!["namePool"].includes(toId) && evt.to.querySelectorAll('.name-tag').length > 4) {
+    evt.from.appendChild(tagEl);
+    alert("각 칸에는 최대 4명까지만 배정할 수 있습니다.");
+    return;
+  }
+
+  const key = tagEl.dataset.key;
+  db.ref("nameTags/" + key).update({ court: toId });
+
+  // ✅ 코트에 들어간 경우에만 배정횟수 증가
+  if (["court1","court2","court3","court4"].includes(toId)) {
+    updateCount(tagEl.textContent.split(" ")[0]);
+  }
+}
+
       const court = evt.to.id;
       const key = evt.item.dataset.key;
       db.ref("nameTags/" + key).update({ court });
@@ -505,7 +520,7 @@ db.ref("nameTags").on("child_added", snap => {
   const data = snap.val();
   const tag = createTag(key, data);
   tagRefs[key] = tag;
-  document.getElementById(data.court || "namePool").appendChild(tag);
+  document.getElementById("tag-" + (data.court || "namePool")).appendChild(tag);
 });
 
 db.ref("nameTags").on("child_removed", snap => {
@@ -518,7 +533,7 @@ db.ref("nameTags").on("child_changed", snap => {
   const key = snap.key;
   const data = snap.val();
   const tag = tagRefs[key];
-  if (tag) document.getElementById(data.court || "namePool").appendChild(tag);
+  if (tag) document.getElementById("tag-" + (data.court || "namePool")).appendChild(tag);
 });
 
 window.onload = () => {
