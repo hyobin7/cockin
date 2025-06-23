@@ -30,17 +30,19 @@
       margin-bottom: 20px;
     }
     .layout {
-      display: flex;
-      flex-direction: row;
-      height: 100%;
-    }
+  display: flex;
+  flex-direction: row;
+  height: 100%;
+  width: 100%;
+  gap: 10px;
+}
     .courts {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      flex: 0 0 50%;
-      min-width: 140px;
-    }
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 0 0 35%;
+  min-width: 140px;
+}
     .column {
   display: flex;
   flex-wrap: wrap;
@@ -98,16 +100,15 @@
       border-color: #ff66b2;
     }
     #namePool {
-      flex: 0 0 66%;
-      max-width: 66%;
-      background: #fff;
-      border: 2px solid #ccc;
-      border-radius: 8px;
-      padding: 10px;
-      min-height: 300px;
-      display: flex;
-      flex-direction: column;
-    }
+  background: #fff;
+  border: 2px solid #ccc;
+  border-radius: 8px;
+  padding: 10px;
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
+  flex: 0 0 35%;
+}
     html, body { height: 100%; }
     @media (max-width: 768px) {
       .column {
@@ -115,14 +116,26 @@
   flex-wrap: wrap;
   align-content: flex-start;
  min-height: 16px !important; }
-      .layout { flex-direction: row; }
+      .layout {
+  display: flex;
+  flex-direction: row;
+  height: 100%;
+  width: 100%;
+  gap: 10px;
+}
     }
     .column {
   display: flex;
   flex-wrap: wrap;
   align-content: flex-start;
  min-height: 80px !important; }
-    .courts { gap: 5px !important; }
+    .courts {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 0 0 35%;
+  min-width: 140px;
+}
   </style>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js">
 let countMap = {};
@@ -387,7 +400,7 @@ document.getElementById("thCount").onclick = () => {
   </div>
   
   <div class="column" id="namePool"><div class="header"><h3>대기</h3><div class="nameTagContainer" id="tag-namePool"></div></div></div>
-  <div class="column" id="statsTableContainer" style="min-width: 300px; flex-grow: 1;" style="min-width: 200px; background: #fff;">
+  <div class="column" id="statsTableContainer" style="min-width: 200px; flex: 0 0 30%;" style="min-width: 200px; background: #fff;">
     <table border="1" style="width: 100%; border-collapse: collapse; font-size: 14px;">
       <thead>
         <tr>
