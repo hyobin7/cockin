@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="utf-8"/>
+  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>배드민턴 코트 배정</title>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -10,73 +10,65 @@
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <style>
     body {
-      font-family: 'Arial', sans-serif;
       margin: 0;
       padding: 1em;
-      background: #f0f8ff;
+      font-family: 'Arial', sans-serif;
+      background-color: #e6f4ff;
     }
-    h2 { text-align: center; }
-    textarea {
-      width: 100%;
-      height: 100px;
+    h2 {
+      text-align: center;
       margin-bottom: 1em;
+    }
+    #inputArea {
+      width: 100%;
+      height: 80px;
       font-size: 16px;
     }
-    .btn {
+    button {
       width: 100%;
       padding: 12px;
-      background-color: #007bff;
-      color: white;
       font-size: 16px;
+      margin: 10px 0;
+      background: #007bff;
+      color: white;
       border: none;
-      border-radius: 8px;
-      margin-bottom: 20px;
+      border-radius: 6px;
     }
-    .layout {
+    .container {
       display: flex;
       flex-direction: row;
       gap: 10px;
-      max-width: 1400px;
-      margin: auto;
+      flex-wrap: wrap;
+      justify-content: center;
     }
-    .column, #namePool {
-      background: #fff;
+    .column {
+      background: white;
       border: 2px solid #ccc;
-      border-radius: 8px;
+      border-radius: 10px;
       padding: 10px;
-      min-height: 160px;
-      flex-grow: 1;
+      width: 300px;
+      min-height: 200px;
     }
     .name-tag {
-      display: inline-block;
-      width: calc(50% - 12px);
-      margin: 5px;
       padding: 8px;
-      border: 1px solid;
-      border-radius: 4px;
+      margin: 5px;
+      border-radius: 5px;
       text-align: center;
-      font-size: 16px;
       font-weight: bold;
       cursor: grab;
     }
-    .male {
-      background-color: #cce5ff;
-      border-color: #3399ff;
-    }
-    .female {
-      background-color: #ffd6e8;
-      border-color: #ff66b2;
-    }
+    .male { background: #cce5ff; }
+    .female { background: #ffd6e8; }
   </style>
 </head>
 <body>
   <h2>배드민턴 이름표 생성</h2>
-  <textarea id="inputArea" placeholder="예: 김영희 3급 여\n홍길동 2급 남"></textarea>
-  <button class="btn" onclick="generateTags()">이름표 만들기</button>
+  <textarea id="inputArea" placeholder="예: 김영희 3급 여&#10;홍길동 2급 남"></textarea>
+  <button onclick="generateTags()">이름표 만들기</button>
 
-  <div class="layout">
+  <div class="container">
     <div id="namePool" class="column">
-      <h3>대기</h3>
+      <h3>대기 칸</h3>
     </div>
     <div id="court1" class="column">
       <h3>1코트</h3>
