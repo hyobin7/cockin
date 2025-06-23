@@ -32,16 +32,18 @@
     .layout {
   display: flex;
   flex-direction: row;
-  height: 100%;
+  height: auto;
   width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
   gap: 10px;
 }
     .courts {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  flex: 0 0 35%;
-  min-width: 140px;
+  flex: 0 0 33%;
+  min-width: 0;
 }
     .column {
   display: flex;
@@ -107,7 +109,8 @@
   min-height: 300px;
   display: flex;
   flex-direction: column;
-  flex: 0 0 35%;
+  flex: 0 0 34%;
+  min-width: 0;
 }
     html, body { height: 100%; }
     @media (max-width: 768px) {
@@ -119,8 +122,10 @@
       .layout {
   display: flex;
   flex-direction: row;
-  height: 100%;
+  height: auto;
   width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
   gap: 10px;
 }
     }
@@ -133,8 +138,8 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
-  flex: 0 0 35%;
-  min-width: 140px;
+  flex: 0 0 33%;
+  min-width: 0;
 }
   </style>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js">
@@ -400,7 +405,7 @@ document.getElementById("thCount").onclick = () => {
   </div>
   
   <div class="column" id="namePool"><div class="header"><h3>대기</h3><div class="nameTagContainer" id="tag-namePool"></div></div></div>
-  <div class="column" id="statsTableContainer" style="min-width: 200px; flex: 0 0 30%;" style="min-width: 200px; background: #fff;">
+  <div class="column" id="statsTableContainer" style="flex: 0 0 33%; min-width: 0;" style="min-width: 200px; background: #fff;">
     <table border="1" style="width: 100%; border-collapse: collapse; font-size: 14px;">
       <thead>
         <tr>
