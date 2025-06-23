@@ -5,6 +5,9 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>배드민턴 코트 배정</title>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <style>
     body {
       font-family: 'Arial', sans-serif;
@@ -30,68 +33,31 @@
       margin-bottom: 20px;
     }
     .layout {
-  display: flex;
-  flex-direction: row;
-  height: auto;
-  width: 100%;
-  max-width: 1400px;
-  margin: 0 auto;
-  gap: 10px;
-}
-    .courts {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  flex: 0 0 33%;
-  min-width: 0;
-}
-    .column {
-  display: flex;
-  flex-wrap: wrap;
-  align-content: flex-start;
-
+      display: flex;
+      flex-direction: row;
+      gap: 10px;
+      max-width: 1400px;
+      margin: auto;
+    }
+    .column, #namePool {
       background: #fff;
       border: 2px solid #ccc;
       border-radius: 8px;
       padding: 10px;
-      min-height: 130px;
+      min-height: 160px;
       flex-grow: 1;
     }
-    .column h3 {
-      text-align: center;
-      margin: 0 0 5px 0;
-    }
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .reset-btn {
-      background-color: #ff6666;
-      color: white;
-      border: none;
-      padding: 5px 10px;
-      border-radius: 6px;
-      font-size: 12px;
-      cursor: pointer;
-    }
     .name-tag {
-  width: calc(66% - 10px);
-  display: inline-block;
-  vertical-align: top;
-  box-sizing: border-box;
-  margin: 5px;
-  height: 50px;
+      display: inline-block;
+      width: calc(50% - 12px);
+      margin: 5px;
       padding: 8px;
-      margin: 5px 0;
       border: 1px solid;
       border-radius: 4px;
-      cursor: grab;
       text-align: center;
-      user-select: none;
       font-size: 16px;
       font-weight: bold;
-      text-transform: uppercase;
+      cursor: grab;
     }
     .male {
       background-color: #cce5ff;
@@ -101,53 +67,69 @@
       background-color: #ffd6e8;
       border-color: #ff66b2;
     }
-    #namePool {
-  background: #fff;
-  border: 2px solid #ccc;
-  border-radius: 8px;
-  padding: 10px;
-  min-height: 300px;
-  display: flex;
-  flex-direction: column;
-  flex: 0 0 34%;
-  min-width: 0;
-}
-    html, body { height: 100%; }
-    @media (max-width: 768px) {
-      .column {
-  display: flex;
-  flex-wrap: wrap;
-  align-content: flex-start;
- min-height: 16px !important; }
-      .layout {
-  display: flex;
-  flex-direction: row;
-  height: auto;
-  width: 100%;
-  max-width: 1400px;
-  margin: 0 auto;
-  gap: 10px;
-}
-    }
-    .column {
-  display: flex;
-  flex-wrap: wrap;
-  align-content: flex-start;
- min-height: 80px !important; }
-    .courts {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  flex: 0 0 33%;
-  min-width: 0;
-}
   </style>
-  
-  
-  
+</head>
+<body>
+  <h2>배드민턴 이름표 생성</h2>
+  <textarea id="inputArea" placeholder="예: 김영희 3급 여\n홍길동 2급 남"></textarea>
+  <button class="btn" onclick="generateTags()">이름표 만들기</button>
 
+  <div class="layout">
+    <div id="namePool" class="column">
+      <h3>대기</h3>
+    </div>
+    <div id="court1" class="column">
+      <h3>1코트</h3>
+    </div>
+    <div id="court2" class="column">
+      <h3>2코트</h3>
+    </div>
+  </div>
 
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBQnSbBwJR-IS1aOuNrJz4qopK3RSiZbGY",
+      authDomain: "cock-5c32d.firebaseapp.com",
+      databaseURL: "https://cock-5c32d-default-rtdb.firebaseio.com",
+      projectId: "cock-5c32d",
+      storageBucket: "cock-5c32d.appspot.com",
+      messagingSenderId: "639370966543",
+      appId: "1:639370966543:web:84bdc6f474a7ba8cbc557a"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
 
+    function createTag(key, data) {
+      const tag = document.createElement("div");
+      tag.className = "name-tag " + (data.gender === "남" ? "male" : "female");
+      tag.textContent = `${data.name} ${data.level}`;
+      tag.dataset.key = key;
+      return tag;
+    }
 
+    function generateTags() {
+      const lines = document.getElementById("inputArea").value.trim().split("\n");
+      lines.forEach(line => {
+        const [name, level, gender] = line.trim().split(" ");
+        if (name && level && gender) {
+          db.ref("nameTags").push({ name, level, gender, court: "namePool" });
+        }
+      });
+      document.getElementById("inputArea").value = "";
+    }
+
+    function renderTag(key, data) {
+      const tag = createTag(key, data);
+      document.getElementById("namePool").appendChild(tag);
+    }
+
+    db.ref("nameTags").on("child_added", snap => {
+      const key = snap.key;
+      const data = snap.val();
+      if (data.court === "namePool") {
+        renderTag(key, data);
+      }
+    });
+  </script>
 </body>
 </html>
